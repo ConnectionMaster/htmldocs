@@ -1322,6 +1322,18 @@ GIT_CONFIG
 </p>
 </dd>
 <dt class="hdlist1">
+GIT_CONFIG_GLOBAL
+</dt>
+<dt class="hdlist1">
+GIT_CONFIG_SYSTEM
+</dt>
+<dd>
+<p>
+        Take the configuration from the given files instead from global or
+        system-level configuration. See <a href="git.html">git(1)</a> for details.
+</p>
+</dd>
+<dt class="hdlist1">
 GIT_CONFIG_NOSYSTEM
 </dt>
 <dd>
@@ -1332,6 +1344,32 @@ GIT_CONFIG_NOSYSTEM
 </dd>
 </dl></div>
 <div class="paragraph"><p>See also <a href="#FILES">[FILES]</a>.</p></div>
+<div class="dlist"><dl>
+<dt class="hdlist1">
+GIT_CONFIG_COUNT
+</dt>
+<dt class="hdlist1">
+GIT_CONFIG_KEY_&lt;n&gt;
+</dt>
+<dt class="hdlist1">
+GIT_CONFIG_VALUE_&lt;n&gt;
+</dt>
+<dd>
+<p>
+        If GIT_CONFIG_COUNT is set to a positive number, all environment pairs
+        GIT_CONFIG_KEY_&lt;n&gt; and GIT_CONFIG_VALUE_&lt;n&gt; up to that number will be
+        added to the process&#8217;s runtime configuration. The config pairs are
+        zero-indexed. Any missing key or value is treated as an error. An empty
+        GIT_CONFIG_COUNT is treated the same as GIT_CONFIG_COUNT=0, namely no
+        pairs are processed. These environment variables will override values
+        in configuration files, but will be overridden by any explicit options
+        passed via <code>git -c</code>.
+</p>
+<div class="paragraph"><p>This is useful for cases where you want to spawn multiple git commands
+with a common configuration but cannot depend on a configuration file,
+for example when writing scripts.</p></div>
+</dd>
+</dl></div>
 </div>
 </div>
 <div class="sect1">
@@ -1494,7 +1532,7 @@ in the section header, like in the example below:</p></div>
 newline and the null byte. Doublequote <code>"</code> and backslash can be included
 by escaping them as <code>\"</code> and <code>\\</code>, respectively. Backslashes preceding
 other characters are dropped when reading; for example, <code>\t</code> is read as
-<code>t</code> and <code>\0</code> is read as <code>0</code> Section headers cannot span multiple lines.
+<code>t</code> and <code>\0</code> is read as <code>0</code>. Section headers cannot span multiple lines.
 Variables may belong directly to a section or to a given subsection. You
 can have <code>[section]</code> if you have <code>[section "subsection"]</code>, but you don&#8217;t
 need to.</p></div>
@@ -2103,6 +2141,16 @@ addEmptyPathspec
 <p>
                 Advice shown if a user runs the add command without providing
                 the pathspec parameter.
+</p>
+</dd>
+<dt class="hdlist1">
+updateSparsePath
+</dt>
+<dd>
+<p>
+                Advice shown when either <a href="git-add.html">git-add(1)</a> or <a href="git-rm.html">git-rm(1)</a>
+                is asked to update index entries outside the current sparse
+                checkout.
 </p>
 </dd>
 </dl></div>
@@ -3188,7 +3236,7 @@ blame.ignoreRevsFile
 </p>
 </dd>
 <dt class="hdlist1">
-blame.markUnblamables
+blame.markUnblamableLines
 </dt>
 <dd>
 <p>
@@ -3404,6 +3452,36 @@ checkout.guess
 </p>
 </dd>
 <dt class="hdlist1">
+checkout.workers
+</dt>
+<dd>
+<p>
+        The number of parallel workers to use when updating the working tree.
+        The default is one, i.e. sequential execution. If set to a value less
+        than one, Git will use as many workers as the number of logical cores
+        available. This setting and <code>checkout.thresholdForParallelism</code> affect
+        all commands that perform checkout. E.g. checkout, clone, reset,
+        sparse-checkout, etc.
+</p>
+<div class="paragraph"><p>Note: parallel checkout usually delivers better performance for repositories
+located on SSDs or over NFS. For repositories on spinning disks and/or machines
+with a small number of cores, the default sequential checkout often performs
+better. The size and compression level of a repository might also influence how
+well the parallel version performs.</p></div>
+</dd>
+<dt class="hdlist1">
+checkout.thresholdForParallelism
+</dt>
+<dd>
+<p>
+        When running parallel checkout with a small number of files, the cost
+        of subprocess spawning and inter-process communication might outweigh
+        the parallelization gains. This setting allows to define the minimum
+        number of files for which parallel checkout should be attempted. The
+        default is 100.
+</p>
+</dd>
+<dt class="hdlist1">
 clean.requireForce
 </dt>
 <dd>
@@ -3420,6 +3498,15 @@ clone.defaultRemoteName
         The name of the remote to create when cloning a repository.  Defaults to
         <code>origin</code>, and can be overridden by passing the <code>--origin</code> command-line
         option to <a href="git-clone.html">git-clone(1)</a>.
+</p>
+</dd>
+<dt class="hdlist1">
+clone.rejectShallow
+</dt>
+<dd>
+<p>
+        Reject to clone a repository if it is a shallow one, can be overridden by
+        passing option <code>--reject-shallow</code> in command line. See <a href="git-clone.html">git-clone(1)</a>
 </p>
 </dd>
 <dt class="hdlist1">
@@ -3678,8 +3765,9 @@ color.pager
 </dt>
 <dd>
 <p>
-        A boolean to enable/disable colored output when the pager is in
-        use (default is true).
+        A boolean to specify whether <code>auto</code> color modes should colorize
+        output going to the pager. Defaults to true; set this to false
+        if your pager does not understand ANSI color codes.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -3989,6 +4077,17 @@ commit.verbose
 </p>
 </dd>
 <dt class="hdlist1">
+commitGraph.generationVersion
+</dt>
+<dd>
+<p>
+        Specifies the type of generation number version to use when writing
+        or reading the commit-graph file. If version 1 is specified, then
+        the corrected commit dates will not be written or read. Defaults to
+        2.
+</p>
+</dd>
+<dt class="hdlist1">
 commitGraph.maxNewFilters
 </dt>
 <dd>
@@ -4238,6 +4337,8 @@ diff.ignoreSubmodules
         and <em>git status</em> when <code>status.submoduleSummary</code> is set unless it is
         overridden by using the --ignore-submodules command-line option.
         The <em>git submodule</em> commands are not affected by this setting.
+        By default this is set to untracked so that any untracked
+        submodules are ignored.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -4463,12 +4564,72 @@ diff.guitool
 <div class="ulist"><ul>
 <li>
 <p>
+araxis
+</p>
+</li>
+<li>
+<p>
+bc
+</p>
+</li>
+<li>
+<p>
 bc3
 </p>
 </li>
 <li>
 <p>
+bc4
+</p>
+</li>
+<li>
+<p>
+codecompare
+</p>
+</li>
+<li>
+<p>
+deltawalker
+</p>
+</li>
+<li>
+<p>
+diffmerge
+</p>
+</li>
+<li>
+<p>
+diffuse
+</p>
+</li>
+<li>
+<p>
+ecmerge
+</p>
+</li>
+<li>
+<p>
+emerge
+</p>
+</li>
+<li>
+<p>
+examdiff
+</p>
+</li>
+<li>
+<p>
+guiffy
+</p>
+</li>
+<li>
+<p>
 gvimdiff
+</p>
+</li>
+<li>
+<p>
+gvimdiff1
 </p>
 </li>
 <li>
@@ -4483,12 +4644,67 @@ gvimdiff3
 </li>
 <li>
 <p>
+kdiff3
+</p>
+</li>
+<li>
+<p>
+kompare
+</p>
+</li>
+<li>
+<p>
+meld
+</p>
+</li>
+<li>
+<p>
 nvimdiff
 </p>
 </li>
 <li>
 <p>
+nvimdiff1
+</p>
+</li>
+<li>
+<p>
 nvimdiff2
+</p>
+</li>
+<li>
+<p>
+nvimdiff3
+</p>
+</li>
+<li>
+<p>
+opendiff
+</p>
+</li>
+<li>
+<p>
+p4merge
+</p>
+</li>
+<li>
+<p>
+smerge
+</p>
+</li>
+<li>
+<p>
+tkdiff
+</p>
+</li>
+<li>
+<p>
+vimdiff
+</p>
+</li>
+<li>
+<p>
+vimdiff1
 </p>
 </li>
 <li>
@@ -4499,6 +4715,16 @@ vimdiff2
 <li>
 <p>
 vimdiff3
+</p>
+</li>
+<li>
+<p>
+winmerge
+</p>
+</li>
+<li>
+<p>
+xxdiff
 </p>
 </li>
 </ul></div>
@@ -4822,7 +5048,8 @@ fetch.negotiationAlgorithm
         setting defaults to "skipping".
         Unknown values will cause <em>git fetch</em> to error out.
 </p>
-<div class="paragraph"><p>See also the <code>--negotiation-tip</code> option for <a href="git-fetch.html">git-fetch(1)</a>.</p></div>
+<div class="paragraph"><p>See also the <code>--negotiate-only</code> and <code>--negotiation-tip</code> options to
+<a href="git-fetch.html">git-fetch(1)</a>.</p></div>
 </dd>
 <dt class="hdlist1">
 fetch.showForcedUpdates
@@ -6646,6 +6873,16 @@ index.recordOffsetTable
 </p>
 </dd>
 <dt class="hdlist1">
+index.sparse
+</dt>
+<dd>
+<p>
+        When enabled, write the index using sparse-directory entries. This
+        has no effect unless <code>core.sparseCheckout</code> and
+        <code>core.sparseCheckoutCone</code> are both enabled. Defaults to <em>false</em>.
+</p>
+</dd>
+<dt class="hdlist1">
 index.threads
 </dt>
 <dd>
@@ -6682,7 +6919,7 @@ init.defaultBranch
 <dd>
 <p>
         Allows overriding the default branch name e.g. when initializing
-        a new repository or when cloning an empty repository.
+        a new repository.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -6806,6 +7043,16 @@ log.excludeDecoration
 </p>
 </dd>
 <dt class="hdlist1">
+log.diffMerges
+</dt>
+<dd>
+<p>
+        Set default diff format to be used for merge commits. See
+        <code>--diff-merges</code> in <a href="git-log.html">git-log(1)</a> for details.
+        Defaults to <code>separate</code>.
+</p>
+</dd>
+<dt class="hdlist1">
 log.follow
 </dt>
 <dd>
@@ -6853,6 +7100,21 @@ log.mailmap
         If true, makes <a href="git-log.html">git-log(1)</a>, <a href="git-show.html">git-show(1)</a>, and
         <a href="git-whatchanged.html">git-whatchanged(1)</a> assume <code>--use-mailmap</code>, otherwise
         assume <code>--no-use-mailmap</code>. True by default.
+</p>
+</dd>
+<dt class="hdlist1">
+lsrefs.unborn
+</dt>
+<dd>
+<p>
+        May be "advertise" (the default), "allow", or "ignore". If "advertise",
+        the server will respond to the client sending "unborn" (as described in
+        protocol-v2.txt) and will advertise support for this feature during the
+        protocol v2 capability advertisement. "allow" is the same as
+        "advertise" except that the server will not advertise support for this
+        feature; this is useful for load-balanced servers that cannot be
+        updated atomically (for example), since the administrator could
+        configure "allow", then after a delay, configure "advertise".
 </p>
 </dd>
 <dt class="hdlist1">
@@ -6926,8 +7188,9 @@ maintenance.strategy
 <p>
 <code>incremental</code>: This setting optimizes for performing small maintenance
   activities that do not delete any data. This does not schedule the <code>gc</code>
-  task, but runs the <code>prefetch</code> and <code>commit-graph</code> tasks hourly and the
-  <code>loose-objects</code> and <code>incremental-repack</code> tasks daily.
+  task, but runs the <code>prefetch</code> and <code>commit-graph</code> tasks hourly, the
+  <code>loose-objects</code> and <code>incremental-repack</code> tasks daily, and the <code>pack-refs</code>
+  task weekly.
 </p>
 </li>
 </ul></div>
@@ -7050,7 +7313,7 @@ merge.defaultToUpstream
         branches at the remote named by <code>branch.&lt;current branch&gt;.remote</code>
         are consulted, and then they are mapped via <code>remote.&lt;remote&gt;.fetch</code>
         to their corresponding remote-tracking branches, and the tips of
-        these tracking branches are merged.
+        these tracking branches are merged. Defaults to true.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -7216,12 +7479,72 @@ merge.guitool
 <div class="ulist"><ul>
 <li>
 <p>
+araxis
+</p>
+</li>
+<li>
+<p>
+bc
+</p>
+</li>
+<li>
+<p>
 bc3
 </p>
 </li>
 <li>
 <p>
+bc4
+</p>
+</li>
+<li>
+<p>
+codecompare
+</p>
+</li>
+<li>
+<p>
+deltawalker
+</p>
+</li>
+<li>
+<p>
+diffmerge
+</p>
+</li>
+<li>
+<p>
+diffuse
+</p>
+</li>
+<li>
+<p>
+ecmerge
+</p>
+</li>
+<li>
+<p>
+emerge
+</p>
+</li>
+<li>
+<p>
+examdiff
+</p>
+</li>
+<li>
+<p>
+guiffy
+</p>
+</li>
+<li>
+<p>
 gvimdiff
+</p>
+</li>
+<li>
+<p>
+gvimdiff1
 </p>
 </li>
 <li>
@@ -7236,12 +7559,67 @@ gvimdiff3
 </li>
 <li>
 <p>
+kdiff3
+</p>
+</li>
+<li>
+<p>
+meld
+</p>
+</li>
+<li>
+<p>
 nvimdiff
 </p>
 </li>
 <li>
 <p>
+nvimdiff1
+</p>
+</li>
+<li>
+<p>
 nvimdiff2
+</p>
+</li>
+<li>
+<p>
+nvimdiff3
+</p>
+</li>
+<li>
+<p>
+opendiff
+</p>
+</li>
+<li>
+<p>
+p4merge
+</p>
+</li>
+<li>
+<p>
+smerge
+</p>
+</li>
+<li>
+<p>
+tkdiff
+</p>
+</li>
+<li>
+<p>
+tortoisemerge
+</p>
+</li>
+<li>
+<p>
+vimdiff
+</p>
+</li>
+<li>
+<p>
+vimdiff1
 </p>
 </li>
 <li>
@@ -7252,6 +7630,16 @@ vimdiff2
 <li>
 <p>
 vimdiff3
+</p>
+</li>
+<li>
+<p>
+winmerge
+</p>
+</li>
+<li>
+<p>
+xxdiff
 </p>
 </li>
 </ul></div>
@@ -7323,6 +7711,16 @@ mergetool.&lt;tool&gt;.cmd
 </p>
 </dd>
 <dt class="hdlist1">
+mergetool.&lt;tool&gt;.hideResolved
+</dt>
+<dd>
+<p>
+        Allows the user to override the global <code>mergetool.hideResolved</code> value
+        for a specific tool. See <code>mergetool.hideResolved</code> for the full
+        description.
+</p>
+</dd>
+<dt class="hdlist1">
 mergetool.&lt;tool&gt;.trustExitCode
 </dt>
 <dd>
@@ -7362,6 +7760,21 @@ mergetool.meld.useAutoMerge
         is supported and will only use <code>--auto-merge</code> when available.  A
         value of <code>false</code> avoids using <code>--auto-merge</code> altogether, and is the
         default value.
+</p>
+</dd>
+<dt class="hdlist1">
+mergetool.hideResolved
+</dt>
+<dd>
+<p>
+        During a merge Git will automatically resolve as many conflicts as
+        possible and write the <em>MERGED</em> file containing conflict markers around
+        any conflicts that it cannot resolve; <em>LOCAL</em> and <em>REMOTE</em> normally
+        represent the versions of the file from before Git&#8217;s conflict
+        resolution. This flag causes <em>LOCAL</em> and <em>REMOTE</em> to be overwriten so
+        that only the unresolved conflicts are presented to the merge tool. Can
+        be configured per-tool via the <code>mergetool.&lt;tool&gt;.hideResolved</code>
+        configuration variable. Defaults to <code>false</code>.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -7649,13 +8062,21 @@ pack.packSizeLimit
         packing to a file when repacking, i.e. the git:// protocol
         is unaffected.  It can be overridden by the <code>--max-pack-size</code>
         option of <a href="git-repack.html">git-repack(1)</a>.  Reaching this limit results
-        in the creation of multiple packfiles; which in turn prevents
-        bitmaps from being created.
-        The minimum size allowed is limited to 1 MiB.
-        The default is unlimited.
-        Common unit suffixes of <em>k</em>, <em>m</em>, or <em>g</em> are
-        supported.
+        in the creation of multiple packfiles.
 </p>
+<div class="paragraph"><p>Note that this option is rarely useful, and may result in a larger total
+on-disk size (because Git will not store deltas between packs), as well
+as worse runtime performance (object lookup within multiple packs is
+slower than a single pack, and optimizations like reachability bitmaps
+cannot cope with multiple packs).</p></div>
+<div class="paragraph"><p>If you need to actively run Git using smaller packfiles (e.g., because your
+filesystem does not support large files), this option may help. But if
+your goal is to transmit a packfile over a medium that supports limited
+sizes (e.g., removable media that cannot store the whole repository),
+you are likely better off creating a single large packfile and splitting
+it using a generic multi-volume archive tool (e.g., Unix <code>split</code>).</p></div>
+<div class="paragraph"><p>The minimum size allowed is limited to 1 MiB. The default is unlimited.
+Common unit suffixes of <em>k</em>, <em>m</em>, or <em>g</em> are supported.</p></div>
 </dd>
 <dt class="hdlist1">
 pack.useBitmaps
@@ -7684,6 +8105,24 @@ pack.useSparse
 </p>
 </dd>
 <dt class="hdlist1">
+pack.preferBitmapTips
+</dt>
+<dd>
+<p>
+        When selecting which commits will receive bitmaps, prefer a
+        commit at the tip of any reference that is a suffix of any value
+        of this configuration over any other commits in the "selection
+        window".
+</p>
+<div class="paragraph"><p>Note that setting this configuration to <code>refs/foo</code> does not mean that
+the commits at the tips of <code>refs/foo/bar</code> and <code>refs/foo/baz</code> will
+necessarily be selected. This is because commits are selected for
+bitmaps from within a series of windows of variable length.</p></div>
+<div class="paragraph"><p>If a commit at the tip of any reference which is a suffix of any value
+of this configuration is seen in a window, it is immediately given
+preference over any other commit in that window.</p></div>
+</dd>
+<dt class="hdlist1">
 pack.writeBitmaps (deprecated)
 </dt>
 <dd>
@@ -7703,6 +8142,18 @@ pack.writeBitmapHashCache
         between an older, bitmapped pack and objects that have been
         pushed since the last gc). The downside is that it consumes 4
         bytes per object of disk space. Defaults to true.
+</p>
+</dd>
+<dt class="hdlist1">
+pack.writeReverseIndex
+</dt>
+<dd>
+<p>
+        When true, git will write a corresponding .rev file (see:
+        <a href="../technical/pack-format.html">Documentation/technical/pack-format.txt</a>)
+        for each new packfile that it writes in all places except for
+        <a href="git-fast-import.html">git-fast-import(1)</a> and in the bulk checkin mechanism.
+        Defaults to false.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -7949,14 +8400,13 @@ push.default
 </li>
 <li>
 <p>
-<code>simple</code> - in centralized workflow, work like <code>upstream</code> with an
-  added safety to refuse to push if the upstream branch&#8217;s name is
-  different from the local one.
+<code>simple</code> - pushes the current branch with the same name on the remote.
 </p>
-<div class="paragraph"><p>When pushing to a remote that is different from the remote you normally
-pull from, work as <code>current</code>.  This is the safest option and is suited
-for beginners.</p></div>
-<div class="paragraph"><p>This mode has become the default in Git 2.0.</p></div>
+<div class="paragraph"><p>If you are working on a centralized workflow (pushing to the same repository you
+pull from, which is typically <code>origin</code>), then you need to configure an upstream
+branch with the same name.</p></div>
+<div class="paragraph"><p>This mode is the default since Git 2.0, and is the safest option suited for
+beginners.</p></div>
 </li>
 <li>
 <p>
@@ -8070,15 +8520,15 @@ push.useForceIfIncludes
 </p>
 </dd>
 <dt class="hdlist1">
-rebase.useBuiltin
+push.negotiate
 </dt>
 <dd>
 <p>
-        Unused configuration variable. Used in Git versions 2.20 and
-        2.21 as an escape hatch to enable the legacy shellscript
-        implementation of rebase. Now the built-in rewrite of it in C
-        is always used. Setting this will emit a warning, to alert any
-        remaining users that setting this now does nothing.
+        If set to "true", attempt to reduce the size of the packfile
+        sent by rounds of negotiation in which the client and the
+        server attempt to find commits in common. If "false", Git will
+        rely solely on the server&#8217;s ref advertisement to find commits
+        in common.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -8181,6 +8631,14 @@ rebase.rescheduleFailedExec
         Automatically reschedule <code>exec</code> commands that failed. This only makes
         sense in interactive mode (or when an <code>--exec</code> option was provided).
         This is the same as specifying the <code>--reschedule-failed-exec</code> option.
+</p>
+</dd>
+<dt class="hdlist1">
+rebase.forkPoint
+</dt>
+<dd>
+<p>
+        If set to false set <code>--no-fork-point</code> option by default.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -9115,6 +9573,16 @@ stash.useBuiltin
 </p>
 </dd>
 <dt class="hdlist1">
+stash.showIncludeUntracked
+</dt>
+<dd>
+<p>
+        If this is set to true, the <code>git stash show</code> command will show
+        the untracked files of a stash entry.  Defaults to false. See
+        description of <em>show</em> command in <a href="git-stash.html">git-stash(1)</a>.
+</p>
+</dd>
+<dt class="hdlist1">
 stash.showPatch
 </dt>
 <dd>
@@ -9687,7 +10155,8 @@ uploadpackfilter.allow
 <dd>
 <p>
         Provides a default value for unspecified object filters (see: the
-        below configuration variable).
+        below configuration variable). If set to <code>true</code>, this will also
+        enable all filters which get added in the future.
         Defaults to <code>true</code>.
 </p>
 </dd>
@@ -9698,9 +10167,9 @@ uploadpackfilter.&lt;filter&gt;.allow
 <p>
         Explicitly allow or ban the object filter corresponding to
         <code>&lt;filter&gt;</code>, where <code>&lt;filter&gt;</code> may be one of: <code>blob:none</code>,
-        <code>blob:limit</code>, <code>tree</code>, <code>sparse:oid</code>, or <code>combine</code>. If using
-        combined filters, both <code>combine</code> and all of the nested filter
-        kinds must be allowed. Defaults to <code>uploadpackfilter.allow</code>.
+        <code>blob:limit</code>, <code>object:type</code>, <code>tree</code>, <code>sparse:oid</code>, or <code>combine</code>.
+        If using combined filters, both <code>combine</code> and all of the nested
+        filter kinds must be allowed. Defaults to <code>uploadpackfilter.allow</code>.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -9932,7 +10401,7 @@ looks like</p></div>
 <div id="footer">
 <div id="footer-text">
 Last updated
- 2020-12-08 16:10:07 PST
+ 2021-05-06 21:16:48 PDT
 </div>
 </div>
 </body>

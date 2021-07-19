@@ -753,6 +753,7 @@ git-ls-files(1) Manual Page
                 (--[cached|deleted|others|ignored|stage|unmerged|killed|modified])*
                 (-[c|d|o|i|s|u|k|m])*
                 [--eol]
+                [--deduplicate]
                 [-x &lt;pattern&gt;|--exclude=&lt;pattern&gt;]
                 [-X &lt;file&gt;|--exclude-from=&lt;file&gt;]
                 [--exclude-per-directory=&lt;file&gt;]
@@ -767,9 +768,8 @@ git-ls-files(1) Manual Page
 <div class="sect1">
 <h2 id="_description">DESCRIPTION</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>This merges the file listing in the directory cache index with the
-actual working directory list, and shows different combinations of the
-two.</p></div>
+<div class="paragraph"><p>This merges the file listing in the index with the actual working
+directory list, and shows different combinations of the two.</p></div>
 <div class="paragraph"><p>One or more of the options below may be used to determine the files
 shown:</p></div>
 </div>
@@ -896,6 +896,18 @@ shown:</p></div>
 <p>
         \0 line termination on output and do not quote filenames.
         See OUTPUT below for more information.
+</p>
+</dd>
+<dt class="hdlist1">
+--deduplicate
+</dt>
+<dd>
+<p>
+        When only filenames are shown, suppress duplicates that may
+        come from having multiple stages during a merge, or giving
+        <code>--deleted</code> and <code>--modified</code> option at the same time.
+        When any of the <code>-t</code>, <code>--unmerged</code>, or <code>--stage</code> option is
+        in use, this option has no effect.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -1219,7 +1231,7 @@ pattern file appears in.</p></div>
 <div id="footer">
 <div id="footer-text">
 Last updated
- 2020-11-11 14:07:52 PST
+ 2021-02-05 17:34:58 PST
 </div>
 </div>
 </body>

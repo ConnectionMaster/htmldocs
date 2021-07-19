@@ -981,6 +981,19 @@ value; if that is unspecified, default to <code>auto</code>.</p></div>
 </p>
 </dd>
 <dt class="hdlist1">
+--sendmail-cmd=&lt;command&gt;
+</dt>
+<dd>
+<p>
+        Specify a command to run to send the email. The command should
+        be sendmail-like; specifically, it must support the <code>-i</code> option.
+        The command will be executed in the shell if necessary.  Default
+        is the value of <code>sendemail.sendmailcmd</code>.  If unspecified, and if
+        --smtp-server is also unspecified, git-send-email will search
+        for <code>sendmail</code> in <code>/usr/sbin</code>, <code>/usr/lib</code> and $PATH.
+</p>
+</dd>
+<dt class="hdlist1">
 --smtp-encryption=&lt;encryption&gt;
 </dt>
 <dd>
@@ -1051,14 +1064,16 @@ a password is obtained using <em>git-credential</em>.</p></div>
 <dd>
 <p>
         If set, specifies the outgoing SMTP server to use (e.g.
-        <code>smtp.example.com</code> or a raw IP address).  Alternatively it can
-        specify a full pathname of a sendmail-like program instead;
-        the program must support the <code>-i</code> option.  Default value can
-        be specified by the <code>sendemail.smtpServer</code> configuration
-        option; the built-in default is to search for <code>sendmail</code> in
-        <code>/usr/sbin</code>, <code>/usr/lib</code> and $PATH if such program is
-        available, falling back to <code>localhost</code> otherwise.
+        <code>smtp.example.com</code> or a raw IP address).  If unspecified, and if
+        <code>--sendmail-cmd</code> is also unspecified, the default is to search
+        for <code>sendmail</code> in <code>/usr/sbin</code>, <code>/usr/lib</code> and $PATH if such a
+        program is available, falling back to <code>localhost</code> otherwise.
 </p>
+<div class="paragraph"><p>For backward compatibility, this option can also specify a full pathname
+of a sendmail-like program instead; the program must support the <code>-i</code>
+option.  This method does not support passing arguments or using plain
+command names.  For those use cases, consider using <code>--sendmail-cmd</code>
+instead.</p></div>
 </dd>
 <dt class="hdlist1">
 --smtp-server-port=&lt;port&gt;
@@ -1588,9 +1603,12 @@ edit ~/.gitconfig to specify your account settings:</p></div>
         smtpUser = yourname@gmail.com
         smtpServerPort = 587</code></pre>
 </div></div>
-<div class="paragraph"><p>If you have multifactor authentication setup on your gmail account, you will
+<div class="paragraph"><p>If you have multi-factor authentication set up on your Gmail account, you will
 need to generate an app-specific password for use with <em>git send-email</em>. Visit
 <a href="https://security.google.com/settings/security/apppasswords">https://security.google.com/settings/security/apppasswords</a> to create it.</p></div>
+<div class="paragraph"><p>If you do not have multi-factor authentication set up on your Gmail account,
+you will need to allow less secure app access. Visit
+<a href="https://myaccount.google.com/lesssecureapps">https://myaccount.google.com/lesssecureapps</a> to enable it.</p></div>
 <div class="paragraph"><p>Once your commits are ready to be sent to the mailing list, run the
 following commands:</p></div>
 <div class="literalblock">
@@ -1628,7 +1646,7 @@ Authen::SASL and Mail::Address.</p></div>
 <div id="footer">
 <div id="footer-text">
 Last updated
- 2020-11-02 14:02:22 PST
+ 2021-06-13 23:29:11 PDT
 </div>
 </div>
 </body>
