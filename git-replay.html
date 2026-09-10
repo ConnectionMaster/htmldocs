@@ -453,7 +453,7 @@ pre>code {
 <div class="sectionbody">
 <div class="verseblock">
 <pre class="content">(EXPERIMENTAL!) <em>git replay</em> ([--contained] --onto=&lt;newbase&gt; | --advance=&lt;branch&gt; | --revert=&lt;branch&gt;)
-                             [--ref=&lt;ref&gt;] [--ref-action=&lt;mode&gt;] &lt;revision-range&gt;</pre>
+                             [--ref=&lt;ref&gt;] [--ref-action=&lt;mode&gt;] [--linearize] &lt;revision-range&gt;</pre>
 </div>
 </div>
 </div>
@@ -560,6 +560,24 @@ traditional behavior where output can be piped to <code>git</code> <code>update-
 </div>
 <div class="paragraph">
 <p>The default mode can be configured via the <code>replay.refAction</code> configuration variable.</p>
+</div>
+</dd>
+<dt class="hdlist1">--linearize</dt>
+<dd>
+<p>In this mode, each replayed commit is stacked on top of the
+previously replayed one, so all replayed commits are flattened into
+a single linear history.</p>
+<div class="paragraph">
+<p>When a merge commit is encountered, all commits in the range reachable
+from the merge commit are replayed into the linear history, and the
+merge commit itself is dropped. A ref that pointed to a merge commit is
+updated to the merge&#8217;s last replayed ancestor. (This matches the
+behavior of git-rebase(1)'s <code>--no-rebase-merges</code> option.)</p>
+</div>
+<div class="paragraph">
+<p><code>--linearize</code> cannot be combined with multiple branches or with
+<code>--contained</code>. To linearize several branches, replay them in separate
+<code>git</code> <code>replay</code> invocations.</p>
 </div>
 </dd>
 <dt class="hdlist1">&lt;revision-range&gt;</dt>
@@ -1797,7 +1815,7 @@ The value can be:</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2026-08-11 13:26:21 -0700
+Last updated 2026-09-10 09:38:17 -0700
 </div>
 </div>
 </body>
